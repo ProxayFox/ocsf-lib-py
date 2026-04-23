@@ -58,11 +58,34 @@ V2_JSON_DATA = """{
                 "type": "object_t",
                 "object_type": "product",
                 "object_name": "Product"
+            },
+            "raw_header": {
+                "caption": "Raw Header",
+                "description": "The email authentication header.",
+                "type": "string_t",
+                "type_name": "String"
             }
         },
         "name": "dictionary",
         "description": "Dictionary",
-        "types": {},
+        "types": {
+            "attributes": {
+                "email_t": {
+                    "caption": "Email Address",
+                    "description": "Email address.",
+                    "type": "string_t",
+                    "type_name": "String",
+                    "observable": 5
+                },
+                "uuid_t": {
+                    "caption": "UUID",
+                    "description": "Universal unique identifier.",
+                    "regex": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+                    "type": "string_t",
+                    "type_name": "String"
+                }
+            }
+        },
         "caption": "Dictionary"
     },
     "categories": {
@@ -157,7 +180,14 @@ def test_no_resolve_object_types():
 def test_decode_v2_schema_payload():
     schema = from_json(V2_JSON_DATA)
 
-    assert "product" in schema.types
+    assert "email_t" in schema.types
+    assert schema.types["email_t"].type == "string_t"
+    assert schema.types["email_t"].type_name == "String"
+    assert "uuid_t" in schema.types
+    assert schema.types["uuid_t"].type == "string_t"
+    assert schema.types["uuid_t"].type_name == "String"
+    assert "product" not in schema.types
+    assert "raw_header" not in schema.types
     assert schema.categories is not None
     assert "system" in schema.categories
     assert schema.categories["system"].name == "system"

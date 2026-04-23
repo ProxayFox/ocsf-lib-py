@@ -30,10 +30,41 @@ def v2_schema_payload(version: str) -> bytes:
             "classes": {},
             "objects": {},
             "dictionary": {
-                "attributes": {},
+                "attributes": {
+                    "product": {
+                        "caption": "Product",
+                        "description": "The product that reported the event.",
+                        "type": "object_t",
+                        "object_type": "product",
+                        "object_name": "Product",
+                    },
+                    "raw_header": {
+                        "caption": "Raw Header",
+                        "description": "The email authentication header.",
+                        "type": "string_t",
+                        "type_name": "String",
+                    },
+                },
                 "name": "dictionary",
                 "description": "Dictionary",
-                "types": {},
+                "types": {
+                    "attributes": {
+                        "email_t": {
+                            "caption": "Email Address",
+                            "description": "Email address.",
+                            "type": "string_t",
+                            "type_name": "String",
+                            "observable": 5,
+                        },
+                        "uuid_t": {
+                            "caption": "UUID",
+                            "description": "Universal unique identifier.",
+                            "regex": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+                            "type": "string_t",
+                            "type_name": "String",
+                        },
+                    }
+                },
                 "caption": "Dictionary",
             },
             "extensions": {
@@ -224,3 +255,19 @@ def test_fetch_schema_omits_embedded_v2_extensions_when_disabled(monkeypatch: py
     schema = OcsfApiClient(fetch_profiles=False, fetch_extensions=False, fetch_categories=False)._fetch_schema("1.8.0")
 
     assert schema.extensions is None
+
+
+def test_fetch_schema_uses_v2_data_types_registry(monkeypatch: pytest.MonkeyPatch):
+    def fake_urlopen(url: str) -> Response:
+        return Response(v2_schema_payload("1.8.0"))
+
+    monkeypatch.setattr(client_module, "urlopen", fake_urlopen)
+
+    schema = OcsfApiClient(fetch_profiles=False, fetch_extensions=False, fetch_categories=False)._fetch_schema("1.8.0")
+
+    assert schema.types["email_t"].type == "string_t"
+    assert schema.types["email_t"].type_name == "String"
+    assert schema.types["uuid_t"].type == "string_t"
+    assert schema.types["uuid_t"].type_name == "String"
+    assert "product" not in schema.types
+    assert "raw_header" not in schema.types
