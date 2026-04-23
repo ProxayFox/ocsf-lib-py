@@ -54,10 +54,15 @@ def _with_name(name: str, data: Any) -> dict[str, Any]:
 
 def normalize_schema_dict(data: dict[str, Any]) -> dict[str, Any]:
     """Normalize server payload differences before deserializing a schema."""
-    # If a dictionary is present but the top-level "types" key is missing, promote the dictionary to the types key.
-    dictionary = _unwrap_attributes(data.get("dictionary"))
-    if dictionary is not None and "types" not in data:
-        data["types"] = dictionary
+    # For v2 payloads, the data-type registry lives under dictionary.types.attributes.
+    dictionary_entry = data.get("dictionary")
+    dictionary = _unwrap_attributes(dictionary_entry)
+    dictionary_types = None
+    if isinstance(dictionary_entry, dict):
+        dictionary_types = _unwrap_attributes(cast(dict[str, Any], dictionary_entry).get("types"))
+
+    if dictionary_types is not None and "types" not in data:
+        data["types"] = dictionary_types
 
     # If a categories dictionary is present, promote it to the top level and add names to each category entry.
     categories = _unwrap_attributes(data.get("categories"))

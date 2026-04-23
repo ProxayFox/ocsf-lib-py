@@ -142,6 +142,7 @@ class ChangedAttr(ChangedModel[OcsfAttr]):
     group: Difference[Optional[str]] = field(default_factory=NoChange)
     observable: Difference[Optional[int]] = field(default_factory=NoChange)
     sibling: Difference[Optional[str]] = field(default_factory=NoChange)
+    type_name: Difference[Optional[str]] = field(default_factory=NoChange)
     profile: Difference[Optional[str | list[str]]] = field(default_factory=NoChange)
     deprecated: Difference[Optional[OcsfDeprecationInfo]] = field(default_factory=NoChange)
 
