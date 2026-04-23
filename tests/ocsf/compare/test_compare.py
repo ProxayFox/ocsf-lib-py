@@ -61,17 +61,17 @@ def test_compare_optional_property():
 
 
 def test_compare_type_metadata_fields():
-    """Test compare() on OcsfType metadata fields that were recently widened."""
+    """Test compare() on OcsfType metadata fields exposed by the current schema model."""
 
-    old_type = OcsfType(caption="Product", type="product", object_type="product", object_name="Product")
-    new_type = OcsfType(caption="Product", type="product", object_type="product", object_name="Platform Product")
+    old_type = OcsfType(caption="UUID", type="string_t", type_name="String")
+    new_type = OcsfType(caption="UUID", type="string_t", type_name="Text")
     diff = compare(old_type, new_type)
 
     assert isinstance(diff, ChangedType)
-    assert "object_type" in asdict(diff)
-    assert "object_name" in asdict(diff)
-    assert diff.object_type == NoChange()
-    assert diff.object_name == Change(before="Product", after="Platform Product")
+    serialized = asdict(diff)
+    assert "type_name" in serialized
+    assert diff.type == NoChange()
+    assert diff.type_name == Change(before="String", after="Text")
 
 
 def test_compare_attr_metadata_fields():
